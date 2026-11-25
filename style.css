@@ -182,3 +182,340 @@ button {
   font-size: 0.8rem;
   margin: 0.25rem 0;
 }
+
+/* ===================== Modo guiado y nueva interfaz ===================== */
+:root {
+  --hand-fill: #f1efe8;
+  --hand-stroke: #5f5e5a;
+  --arrow: #d85a30;
+  --ok: #2e7d32;
+  --bad: #b3261e;
+  --warn: #8a5a00;
+  --panel: rgba(127, 127, 127, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hand-fill: #444441;
+    --hand-stroke: #d3d1c7;
+    --arrow: #f0997b;
+    --ok: #66bb6a;
+    --bad: #ef9a9a;
+    --warn: #ffcc80;
+  }
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 1.5rem;
+}
+
+.top h1 {
+  margin: 0.25rem 0;
+}
+
+.top #status {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* Estado del mando: grande y siempre visible encima de la tele */
+.mode {
+  font-size: 1.2rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.playerTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+
+.techPanel {
+  margin-top: 2rem;
+  border-top: 1px solid #888;
+  padding-top: 0.5rem;
+}
+
+.techPanel > summary {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Asistente */
+.wizard {
+  background: var(--panel);
+  border: 1px solid #888;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.25rem 1rem;
+  margin: 0.75rem 0;
+}
+
+.wizard h2 {
+  margin: 0.5rem 0;
+}
+
+.wizard .big {
+  font-size: 1.1rem;
+}
+
+.wizard .small {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.wizard .hint {
+  color: var(--warn);
+  font-weight: bold;
+}
+
+.wizard button.primary {
+  font-size: 1.05rem;
+  font-weight: bold;
+  padding: 0.6rem 1.4rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #c43e00;
+  color: #fff;
+}
+
+.wizard button.primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.wizard button.link {
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  color: inherit;
+}
+
+.stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+}
+
+.stepper li {
+  padding: 0.15rem 0.6rem;
+  border-radius: 1rem;
+  border: 1px solid #888;
+  opacity: 0.6;
+}
+
+.stepper li.done {
+  opacity: 0.9;
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.stepper li.current {
+  opacity: 1;
+  background: #c43e00;
+  border-color: #c43e00;
+  color: #fff;
+  font-weight: bold;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem 1rem;
+  align-items: end;
+  max-width: 900px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form input,
+.form select {
+  font: inherit;
+  padding: 0.35rem;
+}
+
+.twoCols {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(200px, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.checkBox {
+  text-align: center;
+}
+
+/* Dibujos de los gestos */
+.gestureArt {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+}
+
+.gestureArt .hand rect,
+.gestureArt .hand path {
+  fill: var(--hand-fill);
+  stroke: var(--hand-stroke);
+  stroke-width: 2;
+}
+
+.gestureArt .hand path {
+  fill: none;
+}
+
+.gestureArt .arrow {
+  stroke: var(--arrow);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.gestureArt .arrowHead {
+  fill: var(--arrow);
+}
+
+.gestureArt .ring {
+  fill: none;
+  stroke: var(--ok);
+  stroke-width: 4;
+  stroke-dasharray: 300 200;
+}
+
+.gestureArt .ringRed {
+  stroke: var(--bad);
+}
+
+.gestureArt .artLabel {
+  font: 13px system-ui, sans-serif;
+  fill: currentColor;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.card {
+  border: 2px solid #888;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.card h3 {
+  margin: 0.25rem 0;
+  font-size: 1rem;
+}
+
+.card.ok {
+  border-color: var(--ok);
+}
+
+.practiced {
+  color: var(--ok);
+  font-weight: bold;
+}
+
+.phaseHead {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: center;
+}
+
+/* Aviso grande de cada intento */
+.cue {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0.25rem 0;
+}
+
+.cue.go {
+  color: var(--ok);
+}
+
+.cue.rest {
+  color: var(--warn);
+}
+
+.cue.activity {
+  font-size: 1.5rem;
+}
+
+.bar {
+  height: 0.6rem;
+  border-radius: 0.3rem;
+  background: rgba(127, 127, 127, 0.25);
+  overflow: hidden;
+  max-width: 600px;
+}
+
+.bar > div {
+  height: 100%;
+  width: 0;
+  background: #c43e00;
+  transition: width 0.1s linear;
+}
+
+.marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  min-height: 1.6rem;
+}
+
+.mark {
+  display: inline-block;
+  min-width: 1.6rem;
+  text-align: center;
+  border-radius: 0.3rem;
+  font-weight: bold;
+  padding: 0.1rem 0.3rem;
+  color: #fff;
+}
+
+.mark.mok {
+  background: #2e7d32;
+}
+
+.mark.mno {
+  background: #777;
+}
+
+.mark.mdbl,
+.mark.mother {
+  background: #b3261e;
+}
+
+.summary {
+  border-collapse: collapse;
+}
+
+.summary th,
+.summary td {
+  border: 1px solid #888;
+  padding: 0.3rem 0.6rem;
+}
+
+@media (max-width: 700px) {
+  .phaseHead,
+  .twoCols {
+    grid-template-columns: 1fr;
+  }
+}

@@ -3,10 +3,24 @@
 Mando de un reproductor de vídeo con gestos de las manos (MediaPipe Hand Landmarker
 1.2.2), con defensas contra el problema de Midas.
 
-## Versión publicada
+## Modo guiado (evaluación sin observador)
 
-La página se puede publicar tal cual en GitHub Pages. Para la evaluación a distancia, añade
-`?remoto` a la dirección: se abren las instrucciones para participantes.
+Al abrir la página aparece un asistente que lleva a cada participante paso a paso:
+datos (código, distancia, mano dominante, luz) → cámara → aprender y practicar los gestos
+(con dibujos) → dos rondas, una con cada versión en orden aleatorio → resultados.
+
+En cada ronda la página pide cada gesto varias veces (10 intentos, o 5 + 5 en los gestos
+con dos sentidos). Cada intento tiene una ventana para hacer el gesto (5 s sin defensas,
+7 s con defensas, porque hay que activar antes) y 2,5 s para bajar las manos, y se
+clasifica solo: ✓ la acción correcta una vez, ✗ nada, 2 varias veces, ≠ otra acción.
+Después vienen 3 minutos de actividad normal guiada (hablar gesticulando, beber, móvil…).
+Al final se descarga `evaluacion-<nombre>.csv`, que es lo que hay que enviar.
+
+- `?libre` en la dirección oculta el asistente (página de la plantilla, para grabar el vídeo).
+- `?prueba` acorta la evaluación (1 intento por gesto, 10 s de actividad): solo para probar la página.
+- El «Panel técnico», plegado al final, tiene la versión, la depuración, la evaluación manual y el registro.
+
+La página se puede publicar tal cual en GitHub Pages.
 
 ## Ejecutar en local
 
@@ -51,5 +65,7 @@ La página se puede publicar tal cual en GitHub Pages. Para la evaluación a dis
 | `index.html`, `style.css` | Página (plantilla + selector de versión, depuración y evaluación) |
 | `index.js` | Plantilla; sección 6: conecta los gestos con el reproductor, el estado y el anillo de progreso |
 | `gestures.js` | Heurísticas de los gestos y defensas (sin DOM) |
+| `guide.js` | Modo guiado: asistente de la evaluación y clasificación automática de intentos |
+| `gestureArt.js` | Dibujos SVG de los gestos |
 | `tests/` | Tests de `gestures.js` con manos sintéticas: `node --test tests/gestures.test.mjs` |
 | `tools/analizar.py` | Tabla de resultados a partir de los CSV del registro |

@@ -11,6 +11,8 @@ import {
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.2/vision_bundle.mjs";
 // Nuestra lógica de gestos y defensas (sin DOM: se prueba con node --test)
 import { GestureController, VERSIONS, isTimeOut, isCrossed } from "./gestures.js?v=3";
+// Modo guiado: asistente paso a paso para la evaluación sin observador
+import { initGuide } from "./guide.js?v=1";
 
 const MEDIAPIPE_VERSION = "1.2.2"; // la misma que en el import de arriba
 const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/wasm`;
@@ -162,6 +164,7 @@ const ACTIONS = { togglePause, toggleMute };
 let controller = new GestureController({ defenses: VERSIONS.final, customGestures: CUSTOM_GESTURES });
 let currentVersion = "final";
 let lastOutput = null;
+let lastHandCount = 0;
 
 function recognizeGestures(result) {
   const right = findHand(result, "Right");
@@ -170,6 +173,7 @@ function recognizeGestures(result) {
   const aspect = video.videoWidth / video.videoHeight || 4 / 3;
   const out = controller.update({ right, left, t, aspect });
   lastOutput = out;
+  lastHandCount = result.landmarks.length;
 
   for (const action of out.actions) {
     logMeta = { version: currentVersion, latencyMs: action.latencyMs };
@@ -333,6 +337,7 @@ function toggleMute() {
 // versión (final / sinDefensas) y latencia del gesto (desde que empezó hasta la acción)
 const logRows = [];
 let logMeta = null; // lo rellena recognizeGestures() justo antes de cada acción
+const actionListeners = []; // el modo guiado se entera así de cada acción
 
 function logAction(action, detail) {
   const row = [
@@ -350,20 +355,21 @@ function logAction(action, detail) {
     tr.append(td);
   }
   logBody.prepend(tr); // la acción más reciente, arriba
+  for (const listener of actionListeners) listener(action);
 }
 
-function downloadLog() {
+function downloadLog(filename = "registro-acciones.csv") {
   const quote = (value) => `"${String(value).replaceAll('"', '""')}"`;
   const lines = [["tiempo_s", "accion", "detalle", "version", "latencia_ms"], ...logRows].map((row) => row.map(quote).join(","));
   const blob = new Blob([lines.join("\n")], { type: "text/csv" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "registro-acciones.csv";
+  link.download = filename;
   link.click();
   URL.revokeObjectURL(link.href);
 }
 
-document.querySelector("#btnDownload").addEventListener("click", downloadLog);
+document.querySelector("#btnDownload").addEventListener("click", () => downloadLog());
 document.querySelector("#btnClear").addEventListener("click", () => {
   logRows.length = 0;
   logBody.replaceChildren();
@@ -435,28 +441,67 @@ function bindControls() {
   };
   player.addEventListener("error", showVideoHint);
   if (player.error) showVideoHint();
-  if (new URLSearchParams(location.search).has("remoto")) document.querySelector("#guide").open = true;
   document.querySelector("#btnPhaseStart").addEventListener("click", startPhase);
   document.querySelector("#btnPhaseEnd").addEventListener("click", endPhase);
 }
 
+// Activa la cámara y el bucle de detección. La usan el botón de la plantilla y el
+// modo guiado. Devuelve true si la cámara quedó funcionando.
+let cameraRunning = false;
+let landmarkerReady = null; // promesa: el modelo puede no haber terminado de cargar
+
+async function enableCamera() {
+  if (cameraRunning) return true;
+  btnCamera.disabled = true;
+  try {
+    await landmarkerReady;
+    await startCamera();
+    btnCamera.hidden = true;
+    cameraRunning = true;
+    requestAnimationFrame(predictWebcam);
+    return true;
+  } catch (error) {
+    console.error(error);
+    show(`Error con la cámara: ${error.message}`);
+    btnCamera.disabled = false;
+    return false;
+  }
+}
+
+// Deja el reproductor visible, sin silencio, a volumen medio y reproduciendo
+function resetPlayer() {
+  player.hidden = false;
+  player.muted = false;
+  player.volume = 0.5;
+  player.play().catch(() => {}); // sin vídeo cargado, play() falla: no importa
+}
+
 async function app() {
   bindControls();
-  await createHandLandmarker();
+  landmarkerReady = createHandLandmarker();
+  // Lo que el modo guiado puede hacer con la página
+  initGuide({
+    enableCamera,
+    cameraOn: () => cameraRunning,
+    handCount: () => lastHandCount,
+    setVersion: (name) => applyVersion(name),
+    resetPlayer,
+    setVolume: (v) => {
+      player.volume = v;
+    },
+    modeText: () => modeEl.textContent,
+    logAction,
+    clearLog: () => {
+      logRows.length = 0;
+      logBody.replaceChildren();
+    },
+    downloadLog,
+    onAction: (fn) => actionListeners.push(fn),
+  });
+  await landmarkerReady;
   show(environmentReport());
   btnCamera.disabled = false;
-  btnCamera.addEventListener("click", async () => {
-    btnCamera.disabled = true;
-    try {
-      await startCamera();
-      btnCamera.hidden = true;
-      requestAnimationFrame(predictWebcam);
-    } catch (error) {
-      console.error(error);
-      show(`Error con la cámara: ${error.message}`);
-      btnCamera.disabled = false;
-    }
-  });
+  btnCamera.addEventListener("click", enableCamera);
 }
 
 try {
