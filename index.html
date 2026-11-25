@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>P2: el mando gestual del salón</title>
+    <link rel="stylesheet" href="style.css?v=5" />
+    <!-- MediaPipe no necesita etiquetas <script> aquí: index.js lo importa como módulo ES -->
+  </head>
+  <body>
+    <main>
+      <h1>El mando gestual del salón</h1>
+      <p id="status" role="status">Cargando MediaPipe…</p>
+
+      <!-- Instrucciones para hacer la evaluación a distancia (se abre con ?remoto en la URL) -->
+      <details id="guide" class="guide">
+        <summary>Instrucciones para participantes</summary>
+        <ol>
+          <li>Pulsa «Activar cámara» y permite el acceso a la cámara.</li>
+          <li>En «Elegir vídeo», escoge cualquier vídeo de tu ordenador: hará de televisión.</li>
+          <li>Siéntate a <strong>1,5 m o más</strong> del portátil (unos dos pasos), de forma que se te vean
+            las dos manos. Mide la distancia y díselo a quien te evalúa.</li>
+          <li>Escribe en «Participante» el código que te den (P1, P2…).</li>
+          <li>Comparte esta pestaña en la videollamada y sigue las indicaciones: te dirán qué versión
+            y qué fase hacer, y tú pulsas «Empezar fase» y «Terminar fase».</li>
+          <li>Al terminar, pulsa «Descargar CSV» y envía el archivo.</li>
+        </ol>
+        <table class="gestureTable">
+          <thead><tr><th>Orden</th><th>Gesto</th></tr></thead>
+          <tbody>
+            <tr><td>Activar (solo versión final)</td><td>Palma derecha abierta hacia la cámara, quieta 1 s: la barra se pone verde y el mando escucha 5 s</td></tr>
+            <tr><td>Avanzar / retroceder</td><td>Palma derecha abierta, dedos arriba; desplázala rápido hacia tu derecha (avanza) o tu izquierda (retrocede)</td></tr>
+            <tr><td>Subir / bajar volumen</td><td>Palma izquierda abierta hacia la cámara + índice derecho estirado; mueve la mano derecha rápido hacia arriba o abajo</td></tr>
+            <tr><td>Cerrar el vídeo</td><td>Puño derecho mantenido un momento</td></tr>
+            <tr><td>Pausar / reanudar</td><td>«T» de tiempo muerto: una mano horizontal y la otra vertical tocándola</td></tr>
+            <tr><td>Silenciar / quitar silencio</td><td>«X»: las dos manos abiertas, cruzadas por las muñecas</td></tr>
+          </tbody>
+        </table>
+      </details>
+
+      <button id="btnCamera" type="button" disabled>Activar cámara</button>
+
+      <!-- Versión para la evaluación: "sin defensas" (solo los gestos) o "final".
+           Las casillas permiten activar o desactivar cada defensa por separado. -->
+      <fieldset class="defenses">
+        <legend>Versión</legend>
+        <label>
+          <select id="version">
+            <option value="final">Final (con defensas)</option>
+            <option value="sinDefensas">Sin defensas (solo los gestos)</option>
+            <option value="personalizada" disabled>Personalizada</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="defActivation" checked /> Gesto de activación</label>
+        <label><input type="checkbox" id="defHold" checked /> Mantener el gesto (varios fotogramas)</label>
+        <label><input type="checkbox" id="defHysteresis" checked /> Histéresis</label>
+        <label><input type="checkbox" id="defCooldown" checked /> Tiempo de espera</label>
+        <label><input type="checkbox" id="defFeedback" checked /> Retroalimentación (anillo)</label>
+      </fieldset>
+
+      <div class="layout">
+        <section aria-label="Cámara">
+          <!-- El vídeo y el canvas se superponen; el canvas dibuja los puntos de las manos.
+               playsinline es necesario en iOS Safari. -->
+          <div class="camView">
+            <video id="webcam" autoplay muted playsinline></video>
+            <canvas id="overlay"></canvas>
+          </div>
+        </section>
+
+        <section aria-label="Televisión">
+          <!-- Pon tu vídeo en la carpeta con el nombre video.mp4 (o cambia el src) -->
+          <video id="player" src="video.mp4" controls playsinline loop></video>
+          <!-- Crédito obligatorio por la licencia CC BY del vídeo -->
+          <p class="credit">Vídeo: «Big Buck Bunny» © 2008 Blender Foundation
+            (<a href="https://peach.blender.org/">peach.blender.org</a>), licencia
+            <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+          <!-- aria-live: los lectores de pantalla anuncian si el mando está activado -->
+          <p id="mode" class="mode" aria-live="polite">Mando en reposo</p>
+          <button id="btnShowPlayer" type="button">Volver a mostrar el vídeo</button>
+          <!-- Cualquier vídeo del ordenador: así no hay que publicar ninguno con la página -->
+          <label class="videoPicker">Elegir vídeo <input id="videoFile" type="file" accept="video/*" /></label>
+          <p id="videoHint" class="hint" hidden>No se encuentra video.mp4: elige un vídeo de tu ordenador.</p>
+        </section>
+      </div>
+
+      <h2>Resultados</h2>
+      <dl id="results">
+        <dt>Manos detectadas</dt><dd id="numHands">–</dd>
+        <dt>Mano izquierda</dt><dd id="leftHand">–</dd>
+        <dt>Mano derecha</dt><dd id="rightHand">–</dd>
+        <dt>Gesto mano derecha</dt><dd id="rightGesture">–</dd>
+        <dt>Gesto mano izquierda</dt><dd id="leftGesture">–</dd>
+        <dt>Desplazamiento (tamaños de mano)</dt><dd id="motion">–</dd>
+        <dt>Gestos propios</dt><dd id="ownGestures">–</dd>
+        <dt>Fotogramas por segundo</dt><dd id="fps">–</dd>
+      </dl>
+
+      <h2>Evaluación</h2>
+      <p>Marca el inicio y el fin de cada fase: las marcas quedan en el registro y
+        <code>tools/analizar.py</code> las usa para calcular la tabla. La actividad normal
+        dura 3 minutos y termina sola.</p>
+      <div class="evaluation">
+        <label>Participante <input id="participant" type="text" placeholder="P1" size="6" /></label>
+        <label>Fase
+          <select id="phase">
+            <option>activar</option>
+            <option>avanzar</option>
+            <option>retroceder</option>
+            <option>subir volumen</option>
+            <option>bajar volumen</option>
+            <option>cerrar</option>
+            <option value="propio 1">propio 1 (pausar, T)</option>
+            <option value="propio 2">propio 2 (silenciar, X)</option>
+            <option>actividad normal</option>
+          </select>
+        </label>
+        <button id="btnPhaseStart" type="button">Empezar fase</button>
+        <button id="btnPhaseEnd" type="button">Terminar fase</button>
+        <span id="phaseInfo" aria-live="polite"></span>
+      </div>
+
+      <h2>Registro de acciones</h2>
+      <p>Cada acción sobre el reproductor queda registrada. Úsalo en la evaluación para contar aciertos y activaciones involuntarias.</p>
+      <button id="btnDownload" type="button">Descargar CSV</button>
+      <button id="btnClear" type="button">Borrar registro</button>
+      <table id="log">
+        <thead>
+          <tr><th>Tiempo (s)</th><th>Acción</th><th>Detalle</th><th>Versión</th><th>Latencia (ms)</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+
+    <!-- ?v=N evita que el navegador mezcle versiones de la caché: súbelo al cambiar el código -->
+    <script type="module" src="index.js?v=4"></script>
+  </body>
+</html>
