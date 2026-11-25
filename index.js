@@ -12,7 +12,7 @@ import {
 // Nuestra lógica de gestos y defensas (sin DOM: se prueba con node --test)
 import { GestureController, VERSIONS, isTimeOut, isCrossed } from "./gestures.js?v=3";
 // Modo guiado: asistente paso a paso para la evaluación sin observador
-import { initGuide } from "./guide.js?v=1";
+import { initGuide } from "./guide.js?v=2";
 
 const MEDIAPIPE_VERSION = "1.2.2"; // la misma que en el import de arriba
 const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/wasm`;

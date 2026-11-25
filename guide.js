@@ -275,9 +275,13 @@ export function initGuide(api) {
     html(`${stepper(3 + r)}
       <h2>Ronda ${r + 1} de 2 · ${v.name}</h2>
       <p class="big">${v.intro}</p>
-      <p>Vas a hacer cada gesto varias veces cuando te lo pida la pantalla. Cada intento dura unos segundos:
-        cuando veas <strong>«¡Ahora!»</strong>, haz el gesto <strong>una sola vez</strong>; cuando veas <strong>«Baja las manos»</strong>, descansa.
-        Al final de la ronda hay 3 minutos de actividad normal.</p>
+      <p>Vas a hacer cada gesto varias veces cuando te lo pida la pantalla. Cada intento funciona así:</p>
+      <ol class="big">
+        <li>Cuando veas <strong>«¡Ahora!»</strong>, haz el gesto <strong>UNA sola vez</strong>.</li>
+        <li>Si el mando lo reconoce, verás <strong>«¡Hecho!»</strong>: baja las manos y espera al siguiente intento.</li>
+        <li>Si no pasa nada, <strong>no lo repitas</strong>: espera a que se acabe la barra. Un intento fallido también es un dato útil.</li>
+      </ol>
+      <p>Al final de la ronda hay 3 minutos de actividad normal.</p>
       <button type="button" class="primary" id="bGo">Empezar la ronda →</button>`);
     $("#bGo").addEventListener("click", () => {
       const phases = PHASES.filter((p) => !p.onlyFinal || version === "final");
@@ -299,7 +303,8 @@ export function initGuide(api) {
           <p class="small">Ronda ${r + 1} · gesto ${i + 1} de ${phases.length}</p>
           <h2>${p.label}</h2>
           <p class="big">${p.howto}</p>
-          ${version === "final" && p.id !== "activar" ? '<p class="hint">Recuerda: si la barra no está verde, activa primero el mando (palma quieta 1 s).</p>' : ""}
+          <p class="hint">Un gesto por intento: hazlo una sola vez, aunque no funcione.</p>
+          ${version === "final" && p.id !== "activar" ? '<p class="hint">Si la barra del mando no está verde, actívalo primero (palma quieta 1 s): eso no cuenta como repetir.</p>' : ""}
           <button type="button" class="primary" id="bReady">Estoy listo/a →</button>
         </div>
       </div>`);
@@ -324,6 +329,7 @@ export function initGuide(api) {
       html(`${stepper(3 + r)}
         <h2>${p.label}: ${ok} de ${p.attempts} ✓</h2>
         <p class="marks">${marks.map((m) => `<span class="mark m${markClass(m)}">${m}</span>`).join("")}</p>
+        ${LEGEND}
         <p>${ok === p.attempts ? "¡Perfecto!" : "No pasa nada si algunos fallan: es justo lo que queremos medir."}</p>
         <button type="button" class="primary" id="bNext">Siguiente gesto →</button>`);
       $("#bNext").addEventListener("click", () => runPhase(r, version, phases, i + 1));
@@ -332,32 +338,45 @@ export function initGuide(api) {
 
     const windowMs = WINDOW_MS[version];
     const seen = [];
-    state.listener = (action) => seen.push(action);
+    let resting = false;
+    // Descanso: empieza al acabar la ventana o, antes, en cuanto el mando reconoce el
+    // gesto pedido. Las acciones que lleguen durante el descanso siguen contando para
+    // este intento (así se detectan los disparos dobles).
+    const startRest = (text, cls) => {
+      if (resting) return;
+      resting = true;
+      const cue = $("#cue");
+      cue.textContent = text;
+      cue.className = `cue ${cls}`;
+      after(REST_MS, finishAttempt);
+    };
+    const counts = (action) => p.id === "activar" || action !== "activar";
+    state.listener = (action) => {
+      seen.push(action);
+      if (counts(action)) startRest("¡Hecho! Baja las manos", "done");
+    };
     html(`${stepper(3 + r)}
       <div class="phaseHead">
         <div class="artBig">${GESTURE_ART[p.id]}</div>
         <div>
           <p class="small">${p.label} · intento ${k} de ${p.attempts}</p>
-          <p id="cue" class="cue go">¡Ahora! Haz el gesto</p>
+          <p id="cue" class="cue go">¡Ahora! Haz el gesto una vez</p>
           <div class="bar"><div id="barFill"></div></div>
           <p id="modeEcho" class="small"></p>
           <p class="marks">${marks.map((m) => `<span class="mark m${markClass(m)}">${m}</span>`).join("")}</p>
+          ${LEGEND}
         </div>
       </div>`);
     const t0 = performance.now();
     every(100, () => {
-      const e = performance.now() - t0;
       const fill = $("#barFill");
-      if (fill) fill.style.width = `${Math.min(100, (e / windowMs) * 100)}%`;
+      if (fill && !resting) fill.style.width = `${Math.min(100, ((performance.now() - t0) / windowMs) * 100)}%`;
       const echo = $("#modeEcho");
       if (echo) echo.textContent = api.modeText();
     });
-    after(windowMs, () => {
-      const cue = $("#cue");
-      cue.textContent = "Baja las manos";
-      cue.className = "cue rest";
-    });
-    after(windowMs + REST_MS, () => {
+    after(windowMs, () => startRest("Baja las manos", "rest"));
+
+    function finishAttempt() {
       clearTimers();
       state.listener = null;
       const mark = classify(seen, p);
@@ -365,7 +384,7 @@ export function initGuide(api) {
       api.logAction("intento", `${code} · ${p.id} · ${k} · ${mark}`);
       if (p.id === "cerrar") api.resetPlayer();
       attempt(r, version, phases, i, k + 1);
-    });
+    }
   }
 
   function classify(seen, p) {
@@ -377,7 +396,9 @@ export function initGuide(api) {
     return correct === 1 ? "✓" : "2";
   }
 
-  const markClass = (m) => ({ "✓": "ok", "✗": "no", 2: "dbl", "≠": "other" })[m] ?? "no";
+  const LEGEND = `<p class="small legend">✓ reconocido una vez · ✗ no se reconoció · 2 se activó varias veces · ≠ hizo otra cosa</p>`;
+
+const markClass = (m) => ({ "✓": "ok", "✗": "no", 2: "dbl", "≠": "other" })[m] ?? "no";
 
   // --- 5. Actividad normal (3 min) ------------------------------------------------
   function activity(r, version) {
