@@ -271,3 +271,36 @@ test("formar la T moviendo la mano derecha no cuenta como avanzar", () => {
   const frames = repeat(12, (i) => ({ right: right(OPEN, { x: 0.65 - (0.2 * i) / 11, y: 0.7 }), left: left(OPEN, { x: 0.6, y: 0.45, tilt: -Math.PI / 2 }) }));
   assert.equal(run(ctrl, frames).filter((a) => a.type === "seek").length, 0);
 });
+
+// --- Posturas exactas de las fotos del enunciado --------------------------------------------
+test("enunciado: avanzar con la mano DE CANTO (palma de lado) también avanza", () => {
+  const ctrl = new GestureController({ defenses: VERSIONS.sinDefensas });
+  const frames = repeat(10, (i) => ({ right: right(OPEN, { facing: "side", x: 0.6 - (0.25 * i) / 9 }) }));
+  assert.deepEqual(run(ctrl, frames).map((a) => a.value), [10]);
+});
+
+test("enunciado: la mano de canto no activa el mando (la activación pide la palma de frente)", () => {
+  const ctrl = new GestureController();
+  assert.equal(run(ctrl, repeat(45, { right: right(OPEN, { facing: "side" }) })).length, 0);
+});
+
+test("enunciado: versión final, activar de frente y avanzar de canto", () => {
+  const ctrl = new GestureController();
+  const frames = [...palmStill(33), ...repeat(10, (i) => ({ right: right(OPEN, { facing: "side", x: 0.5 - (0.25 * i) / 9 }) }))];
+  assert.deepEqual(run(ctrl, frames).map((a) => a.type + (a.value ?? "")), ["activar", "seek10"]);
+});
+
+test("enunciado: volumen con el índice derecho EN HORIZONTAL (apuntando a la izquierda)", () => {
+  const ctrl = new GestureController({ defenses: VERSIONS.sinDefensas });
+  const up = repeat(12, (i) => ({
+    right: right(POINT, { x: 0.55, y: 0.6 - (0.25 * i) / 11, tilt: -Math.PI / 2 }),
+    left: left(OPEN, { x: 0.25 }),
+  }));
+  assert.deepEqual(run(ctrl, up).map((a) => a.value), [0.1]);
+  ctrl.reset();
+  const down = repeat(12, (i) => ({
+    right: right(POINT, { x: 0.55, y: 0.4 + (0.25 * i) / 11, tilt: -Math.PI / 2 }),
+    left: left(OPEN, { x: 0.25 }),
+  }));
+  assert.deepEqual(run(ctrl, down).map((a) => a.value), [-0.1]);
+});

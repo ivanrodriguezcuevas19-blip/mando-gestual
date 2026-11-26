@@ -12,7 +12,8 @@ const SEGMENTS = { index: [0.045, 0.025, 0.022], middle: [0.05, 0.028, 0.024], r
 const ORDER = ["index", "middle", "ring", "pinky"]; // puntos 5–8, 9–12, 13–16, 17–20
 
 // fingers: { index, middle, ring, pinky } con "ext" o "fold"; thumb: "ext" o "fold"
-// hand: "Right" | "Left"; facing: "camera" | "back"
+// hand: "Right" | "Left"; facing: "camera" | "back" | "side" (de canto: la palma mira de lado,
+// como en el gesto de avanzar del enunciado)
 // x, y: posición de la muñeca en la imagen (0–1); scale: alto de imagen por metro;
 // tilt: inclinación en radianes (0 = dedos hacia arriba)
 export function makeHand({
@@ -57,12 +58,19 @@ export function makeHand({
     }
   });
 
+  // De canto: girar la mano 90° alrededor del eje vertical (x → profundidad)
+  const yaw = facing === "side" ? Math.PI / 2 : 0;
+  const turned = world.map((p) => ({
+    x: p.x * Math.cos(yaw) + p.z * Math.sin(yaw),
+    y: p.y,
+    z: -p.x * Math.sin(yaw) + p.z * Math.cos(yaw),
+  }));
   const rot = (p) => ({
     x: p.x * Math.cos(tilt) - p.y * Math.sin(tilt),
     y: p.x * Math.sin(tilt) + p.y * Math.cos(tilt),
     z: p.z,
   });
-  const w = world.map(rot);
+  const w = turned.map(rot);
   // Proyección a la imagen: x normalizada por el ancho (dividir por aspect), y por el alto
   const landmarks = w.map((p) => ({ x: x + (p.x * scale) / aspect, y: y + p.y * scale, z: p.z }));
   return { landmarks, world: w, name: hand };

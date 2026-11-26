@@ -400,7 +400,10 @@ export class GestureController {
     if (close.fire) fire({ type: "close", latencyMs: close.latencyMs });
     if (close.progress !== null && d.feedback && canAct) feedback.push({ hand: R, progress: close.progress, kind: "close" });
 
-    // --- 7.3 Avanzar / retroceder: palma derecha abierta que se desplaza en horizontal
+    // --- 7.3 Avanzar / retroceder: mano derecha abierta (en el enunciado, de canto: palma
+    // mirando de lado) que se desplaza en horizontal. No se exige orientación de la palma:
+    // la forma "abierta" se mide en 3D y vale de canto o de frente. La activación, en cambio,
+    // sí pide la palma de frente, así que la mano de canto del swipe no activa el mando.
     // Solo se acumula trayectoria mientras se puede actuar: así el movimiento de vuelta
     // tras un gesto (que cae en el tiempo de espera) no cuenta como gesto contrario.
     this.#follow("swipe", this.swipeTrack, R1?.pose === "open" && canAct, t, () => [R.wrist.x, R.wrist.y, R.size2d]);
@@ -417,8 +420,9 @@ export class GestureController {
       }
     }
 
-    // --- 7.4 Volumen: índice derecho extendido + palma izquierda abierta hacia la cámara;
-    // mover la derecha arriba o abajo
+    // --- 7.4 Volumen: índice derecho extendido (en el enunciado, en horizontal apuntando a la
+    // mano izquierda; no se exige dirección, solo que sea el único dedo estirado) + palma
+    // izquierda abierta hacia la cámara; mover la derecha arriba o abajo
     const volumePose = R?.pose === "point" && L?.pose === "open" && L.facing >= p.palmFacingMin;
     this.#follow("volume", this.volumeTrack, volumePose && canAct, t, () => [R.indexTip.x, R.indexTip.y, R.size2d]);
     if (canAct) {

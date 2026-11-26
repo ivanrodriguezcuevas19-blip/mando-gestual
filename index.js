@@ -10,9 +10,9 @@ import {
   DrawingUtils,
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.2/vision_bundle.mjs";
 // Nuestra lógica de gestos y defensas (sin DOM: se prueba con node --test)
-import { GestureController, VERSIONS, isTimeOut, isCrossed } from "./gestures.js?v=3";
+import { GestureController, VERSIONS, isTimeOut, isCrossed } from "./gestures.js?v=4";
 // Modo guiado: asistente paso a paso para la evaluación sin observador
-import { initGuide } from "./guide.js?v=2";
+import { initGuide } from "./guide.js?v=3";
 
 const MEDIAPIPE_VERSION = "1.2.2"; // la misma que en el import de arriba
 const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/wasm`;

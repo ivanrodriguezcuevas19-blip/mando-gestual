@@ -39,9 +39,9 @@ La página se puede publicar tal cual en GitHub Pages.
 | Gesto | Cómo | Acción |
 |---|---|---|
 | Activación | Palma derecha abierta hacia la cámara, quieta 1 s | El mando escucha 5 s (cada orden renueva el tiempo) |
-| Avanzar / retroceder | Palma derecha abierta desplazándose hacia tu derecha / izquierda | ±10 s |
+| Avanzar / retroceder | Mano derecha abierta **de canto** (palma mirando de lado), dedos arriba, desplazándose hacia tu derecha / izquierda | ±10 s |
 | Cerrar | Puño derecho mantenido 0,7 s | Detiene y oculta el vídeo |
-| Volumen | Índice derecho extendido + palma izquierda hacia la cámara; mover la derecha arriba / abajo | ±10 % |
+| Volumen | Índice derecho estirado **en horizontal** apuntando a la palma izquierda (abierta hacia la cámara); mover la derecha arriba / abajo | ±10 % |
 | Pausar (propio 1) | «T» de tiempo muerto: una mano horizontal y la otra vertical tocándola, 0,5 s | Pausa / reanuda |
 | Silenciar (propio 2) | «X»: manos abiertas cruzadas por las muñecas, 0,5 s | Silencia / quita el silencio |
 

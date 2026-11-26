@@ -12,7 +12,7 @@
 // observador. Las acciones que llegan en la pausa cuentan para el intento anterior:
 // es justo cuando aparecen los disparos dobles (por ejemplo, al devolver la mano).
 
-import { GESTURE_ART } from "./gestureArt.js?v=1";
+import { GESTURE_ART } from "./gestureArt.js?v=2";
 
 const PHASES = [
   {
@@ -28,28 +28,28 @@ const PHASES = [
     label: "Avanzar 10 s",
     attempts: 5,
     expect: ["avanzar"],
-    howto: "Palma derecha abierta con los dedos hacia arriba. Desplázala rápido hacia TU derecha, como pasando una página (unos 15–20 cm).",
+    howto: "Mano derecha abierta DE CANTO (la palma mirando hacia un lado, como un cuchillo) y los dedos hacia arriba. Desplázala rápido hacia TU derecha (unos 15–20 cm).",
   },
   {
     id: "retroceder",
     label: "Retroceder 10 s",
     attempts: 5,
     expect: ["retroceder"],
-    howto: "Palma derecha abierta con los dedos hacia arriba. Desplázala rápido hacia TU izquierda (unos 15–20 cm).",
+    howto: "Mano derecha abierta DE CANTO (la palma mirando hacia un lado) y los dedos hacia arriba. Desplázala rápido hacia TU izquierda (unos 15–20 cm).",
   },
   {
     id: "subir volumen",
     label: "Subir el volumen",
     attempts: 5,
     expect: ["subir volumen"],
-    howto: "Levanta la mano izquierda abierta, con la palma hacia la cámara, y déjala quieta. Con la derecha, estira solo el índice y súbela rápido.",
+    howto: "Levanta la mano izquierda abierta, con la palma hacia la cámara, y déjala quieta. Con la derecha, estira solo el índice EN HORIZONTAL, apuntando a tu mano izquierda, y sube la mano derecha rápido.",
   },
   {
     id: "bajar volumen",
     label: "Bajar el volumen",
     attempts: 5,
     expect: ["bajar volumen"],
-    howto: "Igual que para subir: palma izquierda quieta hacia la cámara e índice derecho estirado, pero ahora baja la mano derecha rápido.",
+    howto: "Igual que para subir: palma izquierda quieta hacia la cámara e índice derecho en horizontal apuntando a ella, pero ahora baja la mano derecha rápido.",
   },
   {
     id: "cerrar",

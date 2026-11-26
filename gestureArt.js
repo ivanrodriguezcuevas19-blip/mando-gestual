@@ -3,7 +3,7 @@
 // variables CSS (--hand-fill, --hand-stroke, --arrow) para que funcionen en modo claro
 // y oscuro. Las manos se dibujan centradas en el origen y se colocan con transform.
 
-// Mano DERECHA abierta, palma hacia la cámara, vista en espejo (pulgar a la izquierda)
+// Mano abierta, palma hacia la cámara, vista en espejo (pulgar a la izquierda)
 // (el pulgar se dibuja primero para que la palma tape su base y parezca unido)
 const OPEN = `
   <rect x="-39.5" y="-16" width="15" height="46" rx="7.5" transform="rotate(-40 -32 30)"/>
@@ -19,11 +19,20 @@ const FIST = `
   <path d="M-19 -40V-16M0 -40V-16M19 -40V-16" fill="none"/>
   <rect x="-38" y="2" width="54" height="18" rx="9"/>`;
 
-// Mano derecha con el índice extendido
-const POINT = `
+// Mano derecha DE CANTO (palma mirando de lado, como un cuchillo), dedos hacia arriba:
+// desde la cámara se ve estrecha. Es la postura de avanzar/retroceder del enunciado.
+const BLADE = `
+  <rect x="2" y="-22" width="14" height="44" rx="7" transform="rotate(32 9 18)"/>
+  <rect x="-15" y="-30" width="30" height="72" rx="12"/>
+  <rect x="-13" y="-88" width="24" height="64" rx="11"/>
+  <path d="M-5 -84V-30M3 -80V-30" fill="none"/>`;
+
+// Mano derecha con el índice estirado EN HORIZONTAL apuntando a la izquierda de la
+// pantalla (hacia la palma izquierda), resto de dedos doblados. Postura de volumen.
+const POINT_H = `
   <rect x="-38" y="-40" width="76" height="76" rx="20"/>
-  <rect x="-34" y="-100" width="16" height="66" rx="8"/>
-  <rect x="-38" y="2" width="54" height="18" rx="9"/>`;
+  <rect x="-104" y="-38" width="70" height="17" rx="8.5"/>
+  <path d="M-38 -10H-14M-38 10H-14" fill="none"/>`;
 
 const hand = (shape, transform) => `<g class="hand" transform="${transform}">${shape}</g>`;
 const arrow = (x1, y1, x2, y2) =>
@@ -45,30 +54,30 @@ export const GESTURE_ART = {
     "Palma derecha abierta hacia la cámara, quieta"
   ),
   avanzar: svg(
-    `${hand(OPEN, "translate(80 100) scale(0.75)")}
-     ${arrow(125, 105, 188, 105)}
+    `${hand(BLADE, "translate(78 100) scale(0.8)")}
+     ${arrow(110, 105, 188, 105)}
      ${label(100, 166, "rápido hacia tu derecha")}`,
-    "Palma derecha abierta desplazándose hacia la derecha"
+    "Mano derecha abierta de canto, dedos arriba, desplazándose hacia la derecha"
   ),
   retroceder: svg(
-    `${hand(OPEN, "translate(120 100) scale(0.75)")}
-     ${arrow(75, 105, 12, 105)}
+    `${hand(BLADE, "translate(122 100) scale(0.8)")}
+     ${arrow(90, 105, 12, 105)}
      ${label(100, 166, "rápido hacia tu izquierda")}`,
-    "Palma derecha abierta desplazándose hacia la izquierda"
+    "Mano derecha abierta de canto, dedos arriba, desplazándose hacia la izquierda"
   ),
   "subir volumen": svg(
     `${hand(OPEN, "translate(55 105) scale(-0.6 0.6)")}
-     ${hand(POINT, "translate(130 115) scale(0.6)")}
-     ${arrow(178, 100, 178, 40)}
+     ${hand(POINT_H, "translate(142 118) scale(0.55)")}
+     ${arrow(186, 110, 186, 40)}
      ${label(100, 166, "izquierda quieta, derecha arriba")}`,
-    "Palma izquierda abierta y la mano derecha con el índice subiendo"
+    "Palma izquierda abierta y la mano derecha con el índice en horizontal, subiendo"
   ),
   "bajar volumen": svg(
     `${hand(OPEN, "translate(55 105) scale(-0.6 0.6)")}
-     ${hand(POINT, "translate(130 95) scale(0.6)")}
-     ${arrow(178, 80, 178, 140)}
+     ${hand(POINT_H, "translate(142 82) scale(0.55)")}
+     ${arrow(186, 70, 186, 140)}
      ${label(100, 166, "izquierda quieta, derecha abajo")}`,
-    "Palma izquierda abierta y la mano derecha con el índice bajando"
+    "Palma izquierda abierta y la mano derecha con el índice en horizontal, bajando"
   ),
   cerrar: svg(
     `${hand(FIST, "translate(100 85) scale(0.9)")}
